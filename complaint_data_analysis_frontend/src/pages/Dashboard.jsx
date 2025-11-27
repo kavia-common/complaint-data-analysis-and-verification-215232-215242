@@ -14,33 +14,61 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
   const [lastUploadId, setLastUploadId] = useState(null);
+  const [lastAnalysisId, setLastAnalysisId] = useState(null);
 
-  const handleAnalyzed = async (initialResults, uploadId) => {
-    // Use analyze response if it contains usable rows; otherwise, fetch via getResults
+  const normalizeToRows = (payload) => {
+    // Convert API AnalyzeResponse or ReportResponse into a flat row list for the table
+    if (!payload) return [];
+    // ReportResponse: { analysis_id, results: AnalyzeResponse }
+    const analyze = payload?.results ?? payload;
+    const issues = Array.isArray(analyze?.issues) ? analyze.issues : [];
+    const columns = Array.isArray(analyze?.columns) ? analyze.columns : [];
+    const rowCount = typeof analyze?.row_count === 'number' ? analyze.row_count : null;
+    const completeness = analyze?.completeness || {};
+
+    // Create table rows: include issues and overall summary
+    const issueRows = issues.map((it, idx) => ({
+      id: `issue-${idx}`,
+      type: 'issue',
+      row_index: it.row_index,
+      status: 'error',
+      message: it.message,
+    }));
+
+    const summaryRow = {
+      id: 'summary',
+      type: 'summary',
+      status: 'ok',
+      message: 'Analysis summary',
+      columns: columns.join(', '),
+      row_count: rowCount,
+      completeness: JSON.stringify(completeness),
+    };
+
+    return [...issueRows, summaryRow];
+  };
+
+  const handleAnalyzed = async (analyzeResp, uploadId) => {
+    // analyzeResp expected to be AnalyzeResponse { analysis_id, ... }
     setLastUploadId(uploadId);
     setErr(null);
     setLoading(true);
     try {
       let outRows = [];
+      let analysisId = analyzeResp?.analysis_id;
 
-      // Normalize initialResults to rows array if possible
-      if (Array.isArray(initialResults)) {
-        outRows = initialResults;
-      } else if (Array.isArray(initialResults?.rows)) {
-        outRows = initialResults.rows;
-      } else if (Array.isArray(initialResults?.results)) {
-        outRows = initialResults.results;
-      }
-
-      if (outRows.length === 0 && uploadId) {
-        const pulled = await getResults(uploadId);
-        if (Array.isArray(pulled)) outRows = pulled;
-        else if (Array.isArray(pulled?.rows)) outRows = pulled.rows;
-        else if (Array.isArray(pulled?.results)) outRows = pulled.results;
+      if (analysisId) {
+        setLastAnalysisId(analysisId);
+        // fetch full report by analysis_id
+        const report = await getResults(analysisId);
+        outRows = normalizeToRows(report);
+      } else {
+        // fallback if backend returned inline results
+        outRows = normalizeToRows(analyzeResp);
       }
 
       // Fallback with minimal example data if still empty
-      if (outRows.length === 0) {
+      if (!outRows || outRows.length === 0) {
         outRows = [
           { id: 1, field: 'complaint_id', status: 'ok', message: '' },
           { id: 2, field: 'device_type', status: 'error', message: 'Missing value' }
@@ -86,6 +114,9 @@ export default function Dashboard() {
             <h3 className="card-title">Run & Status</h3>
             <div style={{ fontSize: 12, color: 'var(--muted)' }}>
               {lastUploadId ? `Upload ID: ${lastUploadId}` : 'No upload yet'}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+              {lastAnalysisId ? `Analysis ID: ${lastAnalysisId}` : null}
             </div>
           </div>
           <div className="card-body">

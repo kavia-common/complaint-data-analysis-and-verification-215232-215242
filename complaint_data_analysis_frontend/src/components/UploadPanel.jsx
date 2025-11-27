@@ -6,7 +6,7 @@ export default function UploadPanel({ onAnalyzed }) {
   /**
    * UploadPanel allows CSV selection, upload, and analysis trigger.
    * Props:
-   *  - onAnalyzed(result): callback when analysis result is available.
+   *  - onAnalyzed(analyzeResponse, uploadId): callback when analysis response is available.
    */
   const fileRef = useRef(null);
   const [fileName, setFileName] = useState('');
@@ -29,7 +29,7 @@ export default function UploadPanel({ onAnalyzed }) {
     setErr(null);
     try {
       const resp = await uploadCSV(file);
-      const id = resp?.uploadId || resp?.id || resp?.upload_id || 'latest';
+      const id = resp?.upload_id || resp?.uploadId || resp?.id || 'latest';
       setUploadId(id);
     } catch (e) {
       setErr(e.message || 'Upload failed');
@@ -46,8 +46,8 @@ export default function UploadPanel({ onAnalyzed }) {
     setLoading(true);
     setErr(null);
     try {
-      const results = await analyze(uploadId);
-      onAnalyzed?.(results, uploadId);
+      const analyzeResponse = await analyze(uploadId);
+      onAnalyzed?.(analyzeResponse, uploadId);
     } catch (e) {
       setErr(e.message || 'Analyze failed');
     } finally {

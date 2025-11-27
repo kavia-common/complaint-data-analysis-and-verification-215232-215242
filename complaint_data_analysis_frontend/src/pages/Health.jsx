@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { apiHealth } from '../api/client';
 
-// PUBLIC_INTERFACE
+ // PUBLIC_INTERFACE
 export default function Health() {
   /**
    * Health page that pings backend to show availability and response payload.
+   * It targets `${REACT_APP_API_BASE}/` and falls back to `${REACT_APP_API_BASE}/health`.
    */
   const [status, setStatus] = useState('checking');
   const [payload, setPayload] = useState(null);
