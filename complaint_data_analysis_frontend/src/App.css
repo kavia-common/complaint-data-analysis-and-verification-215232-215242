@@ -225,6 +225,18 @@ body {
   background: rgba(219, 234, 254, 0.25);
 }
 
+/* Badges */
+.badge-violation {
+  box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
+}
+
+/* Field highlight utility (used inline as well) */
+.field-involved {
+  background: rgba(236, 72, 153, 0.08);
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+
 /* Inputs */
 .input {
   width: 100%;

@@ -68,6 +68,27 @@ export async function uploadCSV(file) {
   return handleResponse(res);
 }
 
+/**
+ * Normalize AnalyzeResponse or ReportResponse payload into a stable shape
+ * so the UI can rely on derived_hazards and summary presence when available.
+ */
+function normalizeAnalysisPayload(payload) {
+  const results = payload?.results || payload || {};
+  return {
+    analysis_id: payload?.analysis_id || results?.analysis_id,
+    results: {
+      analysis_id: results?.analysis_id,
+      columns: results?.columns || [],
+      completeness: results?.completeness || {},
+      issues: Array.isArray(results?.issues) ? results.issues : [],
+      row_count: typeof results?.row_count === 'number' ? results.row_count : 0,
+      hs_summary: results?.hs_summary || {},
+      derived_hazards: Array.isArray(results?.derived_hazards) ? results.derived_hazards : [],
+      summary: results?.summary || {},
+    },
+  };
+}
+
 // PUBLIC_INTERFACE
 export async function analyze(uploadId) {
   /** Triggers analysis for a given upload_id. Returns analysis results incl. analysis_id. */
@@ -81,8 +102,11 @@ export async function analyze(uploadId) {
     },
     body,
   });
-  return handleResponse(res);
+  const data = await handleResponse(res);
+  return normalizeAnalysisPayload(data);
 }
+
+/** Keep normalizeAnalysisPayload in scope from previous block */
 
 // PUBLIC_INTERFACE
 export async function getResults(analysisId) {
@@ -90,5 +114,6 @@ export async function getResults(analysisId) {
   const res = await fetch(buildUrl(`/api/complaints/report/${encodeURIComponent(analysisId)}`), {
     method: 'GET',
   });
-  return handleResponse(res);
+  const data = await handleResponse(res);
+  return normalizeAnalysisPayload(data);
 }
