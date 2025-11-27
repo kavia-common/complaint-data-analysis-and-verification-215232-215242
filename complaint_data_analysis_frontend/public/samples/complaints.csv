@@ -1,0 +1,11 @@
+id,date,device,description,severity,customer_id
+1001,2025-01-12,Infusion Pump,Pump stopped mid-infusion causing delay in medication delivery,high,CUST-001
+1002,2025/02/05,ECG Monitor,Display flickers intermittently during monitoring,medium,CUST-002
+1003,2025-03-08,Surgical Laser,,high,CUST-003
+1003,2025-03-09,Surgical Laser,Duplicate complaint id to test uniqueness rule,low,CUST-004
+1005,2025-13-01,Defibrillator,Error code E42 shown after power cycle,medium,CUST-005
+1006,2025-04-21,Ultrasound,Transducer overheating after 15 minutes of use,high,
+1007,,Ventilator,Alarm volume cannot be adjusted,low,CUST-006
+1008,2025-05-03,Patient Monitor,SpO2 readings inconsistent compared to reference device,medium,CUST-007
+1009,2025-05-07,Insulin Pump,Reservoir door latch fails to close securely,high,CUST-008
+1010,2025-05-11,ECG Monitor,Typo in UI label on settings page,low,CUST-009
